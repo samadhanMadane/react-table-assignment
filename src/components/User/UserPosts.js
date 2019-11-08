@@ -2,9 +2,10 @@ import React, { Component } from 'react';
 import '../../styles/UserPosts.css';
 import { connect } from 'react-redux';
 import * as UserAactions from '../../store/actions/UserActions';
-import { Table, Menu, Dropdown, Popconfirm, Input, Form } from 'antd';
+import { Table, Menu, Dropdown, Popconfirm, Input, Form, Button } from 'antd';
 import ExpandedPost from './ExpandedPost';
 import 'antd/dist/antd.css';
+import AddPostModal from '../Modals/AddPostModal';
 // import EditableCell from './EditableCell';
 
 const EditableContext = React.createContext();
@@ -56,11 +57,12 @@ class UserPosts extends Component {
     super(props);
 
     this.state = {
-      editingPost : {},
-      newPost     : {},
-      userId      : 1,
-      editingKey  : '',
-      columns     : [
+      editingPost         : {},
+      newPost             : {},
+      userId              : 1,
+      editingKey          : '',
+      addNewPostModalOpen : false,
+      columns             : [
         { title: 'Title', dataIndex: 'title', key: 'title', editable: true },
         { title: 'Body', dataIndex: 'body', key: 'body', editable: true },
         { title: 'Action', key: 'operation', render: (text, post) => {
@@ -102,11 +104,14 @@ class UserPosts extends Component {
       ],
     }
 
-    this.postDeleteHandler = this.postDeleteHandler.bind(this);
-    this.edit              = this.edit.bind(this);
-    this.isEditing         = this.isEditing.bind(this);
-    this.cancel            = this.cancel.bind(this);
-    this.save              = this.save.bind(this);
+    this.postDeleteHandler      = this.postDeleteHandler.bind(this);
+    this.edit                   = this.edit.bind(this);
+    this.isEditing              = this.isEditing.bind(this);
+    this.cancel                 = this.cancel.bind(this);
+    this.save                   = this.save.bind(this);
+    this.toggleAddNewPost       = this.toggleAddNewPost.bind(this);
+    this.handleAddNewPostSubmit = this.handleAddNewPostSubmit.bind(this);
+    this.handleAddNewPostCancel = this.handleAddNewPostCancel.bind(this);
   }
 
   componentDidMount () {
@@ -141,12 +146,23 @@ class UserPosts extends Component {
     });
   }
 
-  postAddHandler() {
-    this.props.onAddPost(this.state.newPost);
-  }
-
   postDeleteHandler(postId) {
     this.props.onDeletePost(postId);
+  }
+
+  handleAddNewPostSubmit(postId) {
+    this.props.onDeletePost(postId);
+    this.toggleAddNewPost();
+  }
+
+  handleAddNewPostCancel() {
+    this.toggleAddNewPost();
+  }
+
+  toggleAddNewPost() {
+    this.setState({
+      addNewPostModalOpen : !this.state.addNewPostModalOpen,
+    });
   }
 
   render() {
@@ -173,9 +189,9 @@ class UserPosts extends Component {
     });
 
     return (
-      <div className="user-posts"> 
+      <div className="user-posts">
         <h2 className="header">User {this.state.userId} > Posts</h2>
-        {/* <div><button type="button">Add New Post</button></div> */}
+        <div><Button onClick={this.toggleAddNewPost}>Add New Post</Button></div>
         <div>
           <EditableContext.Provider value={this.props.form}>
             <Table
@@ -192,6 +208,13 @@ class UserPosts extends Component {
             />
           </EditableContext.Provider>
         </div>
+        {this.state.addNewPostModalOpen &&
+          <AddPostModal
+            addNewPostModalOpen={this.state.addNewPostModalOpen}
+            handleAddNewPostSubmit={this.handleAddNewPostSubmit}
+            handleAddNewPostCancel={this.handleAddNewPostCancel}
+          />
+        }
       </div>
     );
   }
